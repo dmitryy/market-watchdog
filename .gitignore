@@ -1,0 +1,10 @@
+/Common/bin
+/Common/obj
+/MarketWatchdog/bin
+/MarketWatchdog/obj
+/Moex.Api/bin
+/Moex.Api/obj
+/Moex.Api.Contracts/bin
+/Moex.Api.Contracts/obj
+/.vs
+/MarketWatchdog/.vs
