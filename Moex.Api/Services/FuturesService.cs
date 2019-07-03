@@ -3,13 +3,14 @@ using Moex.Api.Mappers;
 using Moex.Api.Models;
 using Moex.Api.Repositories;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Moex.Api.Services
 {
     public class FuturesService : IFuturesService
     {
-        private readonly string CacheKey = "futures_history";
+        private readonly string CacheKey = "futures_history_{0}";
 
         private readonly ICacheService _cacheService;
         private readonly IFuturesRepository _futuresRepository;
@@ -24,8 +25,8 @@ namespace Moex.Api.Services
 
         public async Task<IEnumerable<Futures>> GetAllAsync(AssetCode asset)
         {
-            
-            var cache = _cacheService.Get<IEnumerable<Futures>>(CacheKey);
+            var cacheKey = string.Format(CacheKey, asset);
+            var cache = _cacheService.Get<IEnumerable<Futures>>(cacheKey);
 
             if (cache != null)
             {
@@ -51,10 +52,17 @@ namespace Moex.Api.Services
 
             if (futures.Count > 0)
             {
-                _cacheService.Set<IEnumerable<Futures>>(CacheKey, futures);
+                _cacheService.Set<IEnumerable<Futures>>(cacheKey, futures);
             }
 
             return futures;
+        }
+
+        public async Task<Futures> GetClosest(AssetCode asset)
+        {
+            var futures = await GetAllAsync(asset);
+
+            return futures.OrderBy(f => f.ExpireDays).First();
         }
     }
 }

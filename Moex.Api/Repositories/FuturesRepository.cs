@@ -35,7 +35,14 @@ namespace Moex.Api.Repositories
 
         private string GetUrl(AssetCode asset, int start)
         {
-            return $"{HISTORY_FUTURES_URL}?assetcode={asset}&start={start}";
+            var assetString = asset.ToString();
+
+            if (asset == AssetCode.Ri)
+            {
+                assetString = "RTS";
+            }
+
+            return $"{HISTORY_FUTURES_URL}?assetcode={assetString}&start={start}";
         }
     }
 }

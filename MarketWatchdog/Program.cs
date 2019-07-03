@@ -12,70 +12,62 @@ namespace Market.Watchdog
 {
     class Program
     {
+        // TODO:
+        // - create classes to get asset prices
+        // - modify option logic to include base asset
+        // - match current asset price with option series
+
+        // features - all available features
+        // features SiH9 - info
+        // options - all available options
+        // options SiH9 - options for specified features
+        // options SiH9 22 - options for specified expire date
+        // options list SiH9 - get list of options for specified features
+
         static async Task Main(string[] args)
         {
             var services = ServicesPackage.RegisterServices();
-            var options = services.GetService<IOptionsService>();
+            var futuresService = services.GetService<IFuturesService>();
+            var optionsService = services.GetService<IOptionsService>();
 
-            await GetCallsAndDump(options);
+            var asset = AssetCode.Ri;
+
+            var futures = await futuresService.GetClosest(asset);
+            var options = await optionsService.GetAllAsync(asset);
+
+            var optionsSeries = options
+                .Where(o => o.ExpireDays == futures.ExpireDays);
+
+            DumpFuturesForR(futures);
+            DumpCallsForR(optionsSeries);
+            DumpPutsForR(optionsSeries);
         }
 
-        private static async Task GetCallsAndDump(IOptionsService optionService)
+        private static void DumpFuturesForR(Futures futures)
         {
-            var options = await optionService.GetAllAsync(AssetCode.Si);
-
-            var calls = options
-                .Where(o => o.Type == OptionType.Call && o.Close != 0 && o.ExpireDays == 80)
-                .OrderBy(o => o.ExpireDays);
-
-            await DumpForR(calls);
+            Console.WriteLine($"# asset: {futures.SecId}, expires in {futures.ExpireDays} days, price: {futures.Close}, Trade date: {futures.TradeDate}");
+            Console.WriteLine($"asset = {futures.Close.ToString().Replace(',', '.')}");
+            Console.WriteLine($"expiry = 1 / 252 * {futures.ExpireDays}");
         }
 
-        private static async Task DumpOptions(IOptionsService optionService)
+        private static void DumpCallsForR(IEnumerable<Option> options)
         {
-            var options = await optionService.GetAllAsync(AssetCode.Si);
-
             var calls = options
                 .Where(o => o.Type == OptionType.Call && o.Close != 0)
-                .OrderBy(o => o.ExpireDays);
+                .OrderBy(o => o.Strike);
 
-            foreach (var option in calls)
-            {
-                Console.WriteLine($"{option.Type} {option.SecId}: {option.Strike} {option.Close} - Expires in {option.ExpireDays} days, Base asset {option.Futures.SecId}, expires in {option.Futures.ExpireDays}");
-            }
-
-            Console.WriteLine();
-
-            var puts = options
-                .Where(o => o.Type == OptionType.Put && o.Close != 0)
-                .OrderBy(o => o.ExpireDays);
-
-            foreach (var option in puts)
-            {
-                Console.WriteLine($"{option.Type} {option.SecId}: {option.Strike} {option.Close} - Expires in {option.ExpireDays} days, Base asset {option.Futures.SecId}, expires in {option.Futures.ExpireDays}");
-            }
-
-            Console.WriteLine();
-
-            // TODO:
-            // - create classes to get asset prices
-            // - modify option logic to include base asset
-            // - match current asset price with option series
-
-            // features - all available features
-            // features SiH9 - info
-            // options - all available options
-            // options SiH9 - options for specified features
-            // options SiH9 22 - options for specified expire date
-            // options list SiH9 - get list of options for specified features
+            Console.WriteLine($"callStrikes = c({String.Join(',', calls.Select(o => o.Strike.ToString()))})");
+            Console.WriteLine($"callPrices = c({String.Join(',', calls.Select(o => o.Close.ToString().Replace(',', '.')))})");
         }
 
-        private static async Task DumpForR(IEnumerable<Option> options)
+        private static void DumpPutsForR(IEnumerable<Option> options)
         {
-            var asset = options.First().Futures;
-            Console.WriteLine($"asset: {asset.SecId}, expires in {asset.ExpireDays} days, close price: {asset.Close}");
-            Console.WriteLine($"strikes = c({String.Join(',', options.Select(o => o.Strike.ToString()))})");
-            Console.WriteLine($"prices = c({String.Join(',', options.Select(o => o.Close.ToString()))})");
+            var puts = options
+                .Where(o => o.Type == OptionType.Put && o.Close != 0)
+                .OrderBy(o => o.Strike);
+
+            Console.WriteLine($"putStrikes = c({String.Join(',', puts.Select(o => o.Strike.ToString()))})");
+            Console.WriteLine($"putPrices = c({String.Join(',', puts.Select(o => o.Close.ToString().Replace(',', '.')))})");
         }
     }
 }

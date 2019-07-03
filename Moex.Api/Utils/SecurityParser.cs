@@ -9,7 +9,14 @@ namespace Moex.Api.Utils
         {
             switch (asset)
             {
+                case "Ri":
+                case "RI":
+                    return AssetCode.Ri;
+                case "Br":
+                case "BR":
+                    return AssetCode.Br;
                 case "Si":
+                case "SI":
                     return AssetCode.Si;
                 default:
                     return AssetCode.Unknown;
