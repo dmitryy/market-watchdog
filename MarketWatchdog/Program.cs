@@ -2,6 +2,7 @@
 using Market.Watchdog.Packages;
 using Microsoft.Extensions.DependencyInjection;
 using Moex.Api.Models;
+using Moex.Api.Repositories;
 using Moex.Api.Services;
 using System;
 using System.Collections.Generic;
@@ -33,14 +34,18 @@ namespace Market.Watchdog
             var asset = AssetCode.Ri;
 
             var futures = await futuresService.GetClosest(asset);
-            var options = await optionsService.GetAllAsync(asset);
+            var candles = await futuresService.GetCandlesAsync(futures.SecId);
 
-            var optionsSeries = options
-                .Where(o => o.ExpireDays == futures.ExpireDays);
+            DumpCandlesForR(candles
+                .OrderBy(c => c.TradeDate)
+                .Where(c => c.Open > 0 && c.High > 0 && c.Low > 0 && c.Close > 0));
 
-            DumpFuturesForR(futures);
-            DumpCallsForR(optionsSeries);
-            DumpPutsForR(optionsSeries);
+            //var options = await optionsService.GetAllAsync(asset);
+            //var optionsSeries = options
+            //    .Where(o => o.ExpireDays == futures.ExpireDays);
+            //DumpFuturesForR(futures);
+            //DumpCallsForR(optionsSeries);
+            //DumpPutsForR(optionsSeries);
         }
 
         private static void DumpFuturesForR(Futures futures)
@@ -68,6 +73,21 @@ namespace Market.Watchdog
 
             Console.WriteLine($"putStrikes = c({String.Join(',', puts.Select(o => o.Strike.ToString()))})");
             Console.WriteLine($"putPrices = c({String.Join(',', puts.Select(o => o.Close.ToString().Replace(',', '.')))})");
+        }
+
+        private static void DumpCandlesForR(IEnumerable<Futures> candles)
+        {
+            //Open  = c(1, 2, 3, 1, 2, 3, 1, 2, 3, 4)
+            //High  = c(2, 3, 4, 2, 3, 4, 2, 3, 4, 5)
+            //Low   = c(1, 2, 3, 2, 3, 4, 5, 2, 1, 4)
+            //Close = c(3, 2, 1, 3, 4, 2, 1, 4, 2, 3)
+            //ohlc <- data.frame(Open, High, Low, Close)
+
+            Console.WriteLine($"Open = c({String.Join(',', candles.Select(c => c.Open.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"High = c({String.Join(',', candles.Select(c => c.High.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"Low = c({String.Join(',', candles.Select(c => c.Low.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"Close = c({String.Join(',', candles.Select(c => c.Close.ToString().Replace(',', '.')))})");
+            Console.WriteLine("ohlc <- data.frame(Open, High, Low, Close)");
         }
     }
 }

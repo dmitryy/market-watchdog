@@ -58,6 +58,28 @@ namespace Moex.Api.Services
             return futures;
         }
 
+        public async Task<IEnumerable<Futures>> GetCandlesAsync(string futuresSecId)
+        {
+            var futures = new List<Futures>();
+
+            var start = 0;
+            var total = 100;
+
+            while (start < total)
+            {
+                var candles = await _futuresRepository.GetCandlesHistoryAsync(futuresSecId, start);
+                var candlesFutures = candles
+                    .ExtractFutures();
+
+                futures.AddRange(candlesFutures);
+
+                start += candles.Cursor.Size;
+                total = candles.Cursor.Total;
+            }
+
+            return futures;
+        }
+
         public async Task<Futures> GetClosest(AssetCode asset)
         {
             var futures = await GetAllAsync(asset);

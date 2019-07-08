@@ -11,6 +11,7 @@ namespace Moex.Api.Repositories
     public class FuturesRepository : IFuturesRepository
     {
         private readonly string HISTORY_FUTURES_URL = "https://iss.moex.com/iss/history/engines/futures/markets/forts/securities.json";
+        private readonly string HISTORY_FUTURES_CANDLES_URL = "https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/{0}/candles.json";
 
         private readonly IRestClient _restClient;
 
@@ -26,9 +27,9 @@ namespace Moex.Api.Repositories
             _restClient = restClient;
         }
 
-        public async Task<FuturesSecurities> GetHistoryAsync(AssetCode asset, int start)
+        public async Task<FuturesSecurities> GetCandlesHistoryAsync(string futuresSecId, int start)
         {
-            var request = new RestRequest(GetUrl(asset, start), Method.GET, DataFormat.Json);
+            var request = new RestRequest(GetCandlesUrl(futuresSecId, start), Method.GET, DataFormat.Json);
             var response = await _restClient.ExecuteGetTaskAsync<FuturesSecurities>(request);
 
             if (response.ErrorException != null)
@@ -39,7 +40,25 @@ namespace Moex.Api.Repositories
             return response.Data;
         }
 
-        private string GetUrl(AssetCode asset, int start)
+        public async Task<FuturesSecurities> GetHistoryAsync(AssetCode asset, int start)
+        {
+            var request = new RestRequest(GetHistoryUrl(asset, start), Method.GET, DataFormat.Json);
+            var response = await _restClient.ExecuteGetTaskAsync<FuturesSecurities>(request);
+
+            if (response.ErrorException != null)
+            {
+                throw response.ErrorException;
+            }
+
+            return response.Data;
+        }
+
+        private string GetCandlesUrl(string futuresSecId, int start)
+        {
+            return $"{string.Format(HISTORY_FUTURES_CANDLES_URL, futuresSecId)}?from=2018-01-01&start={start}";
+        }
+
+        private string GetHistoryUrl(AssetCode asset, int start)
         {
             var assetString = asset.ToString();
 

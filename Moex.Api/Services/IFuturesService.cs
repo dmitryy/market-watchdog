@@ -9,6 +9,8 @@ namespace Moex.Api.Services
     {
         Task<IEnumerable<Futures>> GetAllAsync(AssetCode asset);
 
+        Task<IEnumerable<Futures>> GetCandlesAsync(string futuresSecId);
+
         Task<Futures> GetClosest(AssetCode asset);
     }
 }
