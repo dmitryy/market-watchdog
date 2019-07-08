@@ -14,6 +14,12 @@ namespace Moex.Api.Repositories
 
         private readonly IRestClient _restClient;
 
+        // futures candles
+        // https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/SIU9/candles.json?from=2019-01-01&start=10
+
+        // bonds
+        // https://iss.moex.com/iss/history/engines/stock/markets/bonds/securities.json?start=1000
+
         public FuturesRepository(
             IRestClient restClient)
         {
