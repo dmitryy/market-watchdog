@@ -5,24 +5,6 @@ namespace Moex.Api.Utils
 {
     public static class SecurityParser
     {
-        public static AssetCode GetAssetCode(string asset)
-        {
-            switch (asset)
-            {
-                case "Ri":
-                case "RI":
-                    return AssetCode.Ri;
-                case "Br":
-                case "BR":
-                    return AssetCode.Br;
-                case "Si":
-                case "SI":
-                    return AssetCode.Si;
-                default:
-                    return AssetCode.Unknown;
-            }
-        }
-
         public static DateTime GetExpireDate(char yearLastDigit, int month, int week)
         {
             int year = GetYearByLastDigit(yearLastDigit);

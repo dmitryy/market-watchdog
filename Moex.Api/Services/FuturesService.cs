@@ -2,6 +2,7 @@
 using Moex.Api.Mappers;
 using Moex.Api.Models;
 using Moex.Api.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,7 +59,7 @@ namespace Moex.Api.Services
             return futures;
         }
 
-        public async Task<IEnumerable<Futures>> GetCandlesAsync(string futuresSecId)
+        public async Task<IEnumerable<Futures>> GetCandlesAsync(string futuresSecId, DateTime from)
         {
             var futures = new List<Futures>();
 
@@ -67,7 +68,7 @@ namespace Moex.Api.Services
 
             while (start < total)
             {
-                var candles = await _futuresRepository.GetCandlesHistoryAsync(futuresSecId, start);
+                var candles = await _futuresRepository.GetCandlesHistoryAsync(futuresSecId, start, from);
                 var candlesFutures = candles
                     .ExtractFutures();
 

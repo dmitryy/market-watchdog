@@ -9,7 +9,7 @@ namespace Moex.Api.Mappers
 {
     public static class FuturesMapper
     {
-        public static IEnumerable<Futures> ExtractFutures(this FuturesSecurities futuresSecurities)
+        public static IEnumerable<Futures> ExtractFutures(this Securities futuresSecurities)
         {
             if (futuresSecurities == null)
             {

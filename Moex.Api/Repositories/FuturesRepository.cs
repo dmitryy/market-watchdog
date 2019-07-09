@@ -1,73 +1,44 @@
 ﻿using Market.Common.Enums;
+using Market.Common.Utils;
 using Moex.Api.Contracts.History;
-using RestSharp;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Moex.Api.Repositories
 {
     public class FuturesRepository : IFuturesRepository
     {
+        // TODO: move constants and url workers to separate place
+
         private readonly string HISTORY_FUTURES_URL = "https://iss.moex.com/iss/history/engines/futures/markets/forts/securities.json";
         private readonly string HISTORY_FUTURES_CANDLES_URL = "https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/{0}/candles.json";
 
-        private readonly IRestClient _restClient;
-
-        // futures candles
-        // https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/SIU9/candles.json?from=2019-01-01&start=10
-
-        // bonds
-        // https://iss.moex.com/iss/history/engines/stock/markets/bonds/securities.json?start=1000
+        private readonly ISecurityRepository _securityRepository;
 
         public FuturesRepository(
-            IRestClient restClient)
+            ISecurityRepository securityRepository)
         {
-            _restClient = restClient;
+            _securityRepository = securityRepository;
         }
 
-        public async Task<FuturesSecurities> GetCandlesHistoryAsync(string futuresSecId, int start)
+        public async Task<Securities> GetCandlesHistoryAsync(string futuresSecId, int start, DateTime from)
         {
-            var request = new RestRequest(GetCandlesUrl(futuresSecId, start), Method.GET, DataFormat.Json);
-            var response = await _restClient.ExecuteGetTaskAsync<FuturesSecurities>(request);
-
-            if (response.ErrorException != null)
-            {
-                throw response.ErrorException;
-            }
-
-            return response.Data;
+            return await _securityRepository.GetAsync(GetCandlesUrl(futuresSecId, start, from));
         }
 
-        public async Task<FuturesSecurities> GetHistoryAsync(AssetCode asset, int start)
+        public async Task<Securities> GetHistoryAsync(AssetCode asset, int start)
         {
-            var request = new RestRequest(GetHistoryUrl(asset, start), Method.GET, DataFormat.Json);
-            var response = await _restClient.ExecuteGetTaskAsync<FuturesSecurities>(request);
-
-            if (response.ErrorException != null)
-            {
-                throw response.ErrorException;
-            }
-
-            return response.Data;
+            return await _securityRepository.GetAsync(GetHistoryUrl(asset, start));
         }
 
-        private string GetCandlesUrl(string futuresSecId, int start)
+        private string GetCandlesUrl(string futuresSecId, int start, DateTime from)
         {
-            return $"{string.Format(HISTORY_FUTURES_CANDLES_URL, futuresSecId)}?from=2018-01-01&start={start}";
+            return $"{string.Format(HISTORY_FUTURES_CANDLES_URL, futuresSecId)}?from={from.ToString("YYYY-MM-dd")}&start={start}";
         }
 
         private string GetHistoryUrl(AssetCode asset, int start)
         {
-            var assetString = asset.ToString();
-
-            if (asset == AssetCode.Ri)
-            {
-                assetString = "RTS";
-            }
-
-            return $"{HISTORY_FUTURES_URL}?assetcode={assetString}&start={start}";
+            return $"{HISTORY_FUTURES_URL}?assetcode={AssetUtils.GetAssetCodeString(asset)}&start={start}";
         }
     }
 }

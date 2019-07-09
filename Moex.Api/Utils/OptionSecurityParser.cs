@@ -1,4 +1,5 @@
 ﻿using Market.Common.Enums;
+using Market.Common.Utils;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -18,7 +19,7 @@ namespace Moex.Api.Utils
         /// </summary>
         public static (AssetCode, OptionType, int, DateTime) Parse(string secId)
         {
-            var asset = SecurityParser.GetAssetCode(secId.Substring(0, 2));
+            var asset = AssetUtils.GetAssetCode(secId.Substring(0, 2));
             var strike = Regex.Split(secId, @"\D+")[1];
             var ps = secId.Substring(secId.IndexOf(strike) + strike.Length);
             var month = ps[1];

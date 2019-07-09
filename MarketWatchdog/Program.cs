@@ -2,7 +2,6 @@
 using Market.Watchdog.Packages;
 using Microsoft.Extensions.DependencyInjection;
 using Moex.Api.Models;
-using Moex.Api.Repositories;
 using Moex.Api.Services;
 using System;
 using System.Collections.Generic;
@@ -25,6 +24,13 @@ namespace Market.Watchdog
         // options SiH9 22 - options for specified expire date
         // options list SiH9 - get list of options for specified features
 
+        // futures candles
+        // https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/SIU9/candles.json?from=2019-01-01&start=10
+
+        // bonds
+        // https://iss.moex.com/iss/history/engines/stock/markets/bonds/securities.json?start=1000
+
+
         static async Task Main(string[] args)
         {
             var services = ServicesPackage.RegisterServices();
@@ -32,20 +38,23 @@ namespace Market.Watchdog
             var optionsService = services.GetService<IOptionsService>();
 
             var asset = AssetCode.Ri;
+            var from = DateTime.Parse("2019-01-01");
 
             var futures = await futuresService.GetClosest(asset);
-            var candles = await futuresService.GetCandlesAsync(futures.SecId);
+            var candles = await futuresService.GetCandlesAsync(futures.SecId, from);
+
+            var options = await optionsService.GetAllAsync(asset);
+            var optionsSeries = options
+                .Where(o => o.ExpireDays == futures.ExpireDays);
+
+            DumpFuturesForR(futures);
+            DumpCallsForR(optionsSeries);
+            DumpPutsForR(optionsSeries);
 
             DumpCandlesForR(candles
                 .OrderBy(c => c.TradeDate)
-                .Where(c => c.Open > 0 && c.High > 0 && c.Low > 0 && c.Close > 0));
-
-            //var options = await optionsService.GetAllAsync(asset);
-            //var optionsSeries = options
-            //    .Where(o => o.ExpireDays == futures.ExpireDays);
-            //DumpFuturesForR(futures);
-            //DumpCallsForR(optionsSeries);
-            //DumpPutsForR(optionsSeries);
+                .Where(c => c.Open > 0 && c.High > 0 && c.Low > 0 && c.Close > 0)
+                .TakeLast(futures.ExpireDays));
         }
 
         private static void DumpFuturesForR(Futures futures)
@@ -83,6 +92,7 @@ namespace Market.Watchdog
             //Close = c(3, 2, 1, 3, 4, 2, 1, 4, 2, 3)
             //ohlc <- data.frame(Open, High, Low, Close)
 
+            Console.WriteLine();
             Console.WriteLine($"Open = c({String.Join(',', candles.Select(c => c.Open.ToString().Replace(',', '.')))})");
             Console.WriteLine($"High = c({String.Join(',', candles.Select(c => c.High.ToString().Replace(',', '.')))})");
             Console.WriteLine($"Low = c({String.Join(',', candles.Select(c => c.Low.ToString().Replace(',', '.')))})");

@@ -6,6 +6,6 @@ namespace Moex.Api.Repositories
 {
     public interface IOptionsRepository
     {
-        Task<OptionSecurities> GetHistoryAsync(AssetCode asset, int start);
+        Task<Securities> GetHistoryAsync(AssetCode asset, int start);
     }
 }

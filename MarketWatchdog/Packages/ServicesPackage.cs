@@ -15,11 +15,12 @@ namespace Market.Watchdog.Packages
                 .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<IFuturesRepository, FuturesRepository>()
                 .AddSingleton<IFuturesService, FuturesService>()
-                .AddSingleton<IOptionsRepository, OptionsRepository>()
-                .AddSingleton<IOptionsService, OptionsService>()
                 .AddSingleton<IMemoryCache, MemoryCache>()
                 .AddSingleton<IOptions<MemoryCacheOptions>, MemoryCacheOptions>()
+                .AddSingleton<IOptionsRepository, OptionsRepository>()
+                .AddSingleton<IOptionsService, OptionsService>()
                 .AddSingleton<IRestClient, RestClient>()
+                .AddSingleton<ISecurityRepository, SecurityRepository>()
                 .BuildServiceProvider();
 
             return serviceProvider;
