@@ -59,6 +59,13 @@ namespace Moex.Api.Services
             return futures;
         }
 
+        public async Task<Futures> GetBySecId(AssetCode asset, string secId)
+        {
+            var futures = await GetAllAsync(asset);
+
+            return futures.SingleOrDefault(f => f.SecId.Equals(secId));
+        }
+
         public async Task<IEnumerable<Futures>> GetCandlesAsync(string futuresSecId, DateTime from)
         {
             var futures = new List<Futures>();

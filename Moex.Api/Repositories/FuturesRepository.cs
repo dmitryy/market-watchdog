@@ -33,7 +33,7 @@ namespace Moex.Api.Repositories
 
         private string GetCandlesUrl(string futuresSecId, int start, DateTime from)
         {
-            return $"{string.Format(HISTORY_FUTURES_CANDLES_URL, futuresSecId)}?from={from.ToString("YYYY-MM-dd")}&start={start}";
+            return $"{string.Format(HISTORY_FUTURES_CANDLES_URL, futuresSecId)}?from={from.ToString("yyyy-MM-dd")}&start={start}";
         }
 
         private string GetHistoryUrl(AssetCode asset, int start)

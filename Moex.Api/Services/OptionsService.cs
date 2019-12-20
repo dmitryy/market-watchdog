@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Market.Common.Enums;
 using Moex.Api.Mappers;
@@ -42,6 +42,29 @@ namespace Moex.Api.Services
             }
 
             return options;
+        }
+
+        public async Task<IEnumerable<Option>> GetCandlesAsync(string secId, DateTime from)
+        {
+            var options = new List<Option>();
+
+            var start = 0;
+            var total = 100;
+
+            while (start < total)
+            {
+                var candles = await _optionsRepository.GetCandlesHistoryAsync(secId, start, from);
+                var candlesOptions = candles
+                    .ExtractOptions();
+
+                options.AddRange(candlesOptions);
+
+                start += candles.Cursor.Size;
+                total = candles.Cursor.Total;
+            }
+
+            return options;
+
         }
     }
 }

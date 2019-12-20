@@ -13,5 +13,7 @@ namespace Moex.Api.Services
         Task<IEnumerable<Futures>> GetCandlesAsync(string futuresSecId, DateTime from);
 
         Task<Futures> GetClosest(AssetCode asset);
+
+        Task<Futures> GetBySecId(AssetCode asset, string secId);
     }
 }

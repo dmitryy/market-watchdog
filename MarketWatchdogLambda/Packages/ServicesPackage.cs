@@ -1,17 +1,18 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using MarketDataStorage.Services;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moex.Api.Repositories;
 using Moex.Api.Services;
 using RestSharp;
 
-namespace Market.Watchdog.Packages
+namespace MarketWatchdogLambda.Packages
 {
     public class ServicesPackage
     {
         public static ServiceProvider RegisterServices()
         {
-            ServiceProvider serviceProvider = new ServiceCollection()
+            return new ServiceCollection()
                 .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<IFuturesRepository, FuturesRepository>()
                 .AddSingleton<IFuturesService, FuturesService>()
@@ -24,9 +25,8 @@ namespace Market.Watchdog.Packages
                 .AddSingleton<IRestClient, RestClient>()
                 .AddSingleton<ISecurityRepository, SecurityRepository>()
                 .AddSingleton<ITradeRepository, TradeRepository>()
+                .AddSingleton<IStorageService, S3StorageService>()
                 .BuildServiceProvider();
-
-            return serviceProvider;
         }
     }
 }

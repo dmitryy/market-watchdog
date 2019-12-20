@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Market.Watchdog", "MarketWatchdog\Market.Watchdog.csproj", "{F21C99D1-55D3-4F24-A76D-A899D5F070F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moex.Api", "Moex.Api\Moex.Api.csproj", "{6BFC2C68-C115-4A75-82C9-9899E77B4DAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Moex.Api", "Moex.Api\Moex.Api.csproj", "{6BFC2C68-C115-4A75-82C9-9899E77B4DAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moex.Api.Contracts", "Moex.Api.Contracts\Moex.Api.Contracts.csproj", "{D6C4CE9A-E2C7-4E80-8516-CCD915F60BA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Moex.Api.Contracts", "Moex.Api.Contracts\Moex.Api.Contracts.csproj", "{D6C4CE9A-E2C7-4E80-8516-CCD915F60BA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.Common", "Common\Market.Common.csproj", "{5D9697BB-A086-45AE-9C22-02D784DAE36D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Market.Common", "Common\Market.Common.csproj", "{5D9697BB-A086-45AE-9C22-02D784DAE36D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

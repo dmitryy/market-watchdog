@@ -5,6 +5,7 @@ using Moex.Api.Models;
 using Moex.Api.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,31 +31,109 @@ namespace Market.Watchdog
         // bonds
         // https://iss.moex.com/iss/history/engines/stock/markets/bonds/securities.json?start=1000
 
-
         static async Task Main(string[] args)
         {
             var services = ServicesPackage.RegisterServices();
             var futuresService = services.GetService<IFuturesService>();
             var optionsService = services.GetService<IOptionsService>();
+            var optionsTradeService = services.GetService<IOptionTradeService>();
 
-            var asset = AssetCode.Ri;
-            var from = DateTime.Parse("2019-01-01");
+            var allfutures = await futuresService.GetAllAsync(AssetCode.Si);
+            var allOptions = await optionsService.GetAllAsync(AssetCode.Si);
 
-            var futures = await futuresService.GetClosest(asset);
+            var basePath = $"C:\\MarketData\\{DateTime.Now.ToString("yyyy-MM-dd")}";
+
+            foreach (var future in allfutures.Reverse())
+            {
+                Console.WriteLine(future.SecId);
+
+                var futureOptions = allOptions.Where(o => o.Futures.SecId.Equals(future.SecId));
+
+                foreach (var option in futureOptions)
+                {
+                    var path = $"{basePath}\\{future.SecId}\\{option.SecId}.csv";
+                    var trades = await optionsTradeService.GetTrades(option.SecId);
+                    if (trades.Any())
+                    {
+                        var strings = trades.Select(t => $"{t.TradeNo}, {t.BoardName}, {t.SecId}, {t.TradeDate}, {t.TradeTime}, {t.Price}, {t.Quantity}, {t.SysTime}");
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        File.WriteAllLines(path, strings);
+                        Console.WriteLine($"{option.SecId} {strings.Count()}");
+                    }
+                    else
+                    {
+                        Console.Write(".");
+                    }
+
+                    //System.Threading.Thread.Sleep(1000);
+                }
+
+                //Console.WriteLine(string.Join(",", allOptions
+                //    .Where(o => o.Futures.SecId.Equals(future.SecId))
+                //    .Select(o => o.SecId)
+                //    .ToArray()));
+            }
+
+            //var trades = await optionsTradeService.GetTrades("Si65000BL9");
+            //trades.ToList().ForEach(f => 
+            //{
+            //    Console.WriteLine($"{f.SecId} {f.Quantity} {f.Price}");
+            //});
+
+            return;
+
+
+            // 2019-11-01
+            //  SiZ9
+            //   Si52000BK9
+            //   Si52000BL9
+            //   Si52000BW9
+            //   Si52000BX9
+            //   ...
+            //   Si84000BL9
+            //   Si84000BX9
+            //   Si84250BL9
+            //   Si84250BX9
+            //
+            //allOptions.ToList().ForEach(o =>
+            //{
+            //    Console.WriteLine($"{o.Futures.SecId} {o.SecId}");
+            //});
+
+            return;
+
+            var asset = AssetCode.Br;
+            var from = DateTime.Parse("2019-09-01"); // DateTime.Parse("2019-01-01");
+
+            //var futures = await futuresService.GetClosest(asset);
+            var futures = await futuresService.GetBySecId(asset, "BRV9");
             var candles = await futuresService.GetCandlesAsync(futures.SecId, from);
 
             var options = await optionsService.GetAllAsync(asset);
             var optionsSeries = options
-                .Where(o => o.ExpireDays == futures.ExpireDays);
+                .Where(o => o.ExpireDays == futures.ExpireDays && o.Strike == 68);
 
             DumpFuturesForR(futures);
-            DumpCallsForR(optionsSeries);
-            DumpPutsForR(optionsSeries);
+
+            foreach (var os in optionsSeries)
+            {
+                var optionCandles = await optionsService.GetCandlesAsync(os.SecId, from);
+                    //.Where(c => c.Close > 0);
+
+                Console.WriteLine();
+                Console.WriteLine($"# {os.SecId} {os.Type} -  {optionCandles.Count()}");
+                Console.WriteLine($"# Start: {optionCandles.First().TradeDate.ToShortDateString()} End: {optionCandles.Last().TradeDate.ToShortDateString()}");
+
+                DumpCandlesForR(optionCandles, os.Type.ToString());
+            }
+
+            //DumpCallsForR(optionsSeries);
+            //DumpPutsForR(optionsSeries);
 
             DumpCandlesForR(candles
-                .OrderBy(c => c.TradeDate)
-                .Where(c => c.Open > 0 && c.High > 0 && c.Low > 0 && c.Close > 0)
-                .TakeLast(futures.ExpireDays));
+                .OrderBy(c => c.TradeDate));
+                //.Where(c => c.Open > 0 && c.High > 0 && c.Low > 0 && c.Close > 0))
+                //.TakeLast(72));
         }
 
         private static void DumpFuturesForR(Futures futures)
@@ -98,6 +177,17 @@ namespace Market.Watchdog
             Console.WriteLine($"Low = c({String.Join(',', candles.Select(c => c.Low.ToString().Replace(',', '.')))})");
             Console.WriteLine($"Close = c({String.Join(',', candles.Select(c => c.Close.ToString().Replace(',', '.')))})");
             Console.WriteLine("ohlc <- data.frame(Open, High, Low, Close)");
+        }
+
+        private static void DumpCandlesForR(IEnumerable<Option> candles, string name)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"{name}Open = c({String.Join(',', candles.Select(c => c.Open.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"{name}High = c({String.Join(',', candles.Select(c => c.High.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"{name}Low = c({String.Join(',', candles.Select(c => c.Low.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"{name}Close = c({String.Join(',', candles.Select(c => c.Close.ToString().Replace(',', '.')))})");
+            Console.WriteLine($"{name}OHLC <- data.frame({name}Open, {name}High, {name}Low, {name}Close)");
+            Console.WriteLine($"{name}Days = c({String.Join(',', candles.Select(c => (c.Expire - c.TradeDate).Days))})");
         }
     }
 }
