@@ -19,8 +19,8 @@ namespace MarketDataStorage.Services
                 $"{t.TradeNo}, {t.BoardName}, {t.SecId}, {t.TradeDate}, {t.TradeTime}, {t.Price}, {t.Quantity}, {t.SysTime}");
 
             var client = new AmazonS3Client(
-                "AKIAJKEJIVM2F5FYOYVA",
-                "y7mNgMB8H9l0DYNoQ+q8h6oGjh7nk8HrZrQkTbLV",
+                "",
+                "",
                 BUCKET_REGION);
 
             var putRequest = new PutObjectRequest
